@@ -8,8 +8,12 @@
 name: OpenWrt-CI
 
 on:
-  schedule:
-    - cron: 0 20 * * *
+  # schedule:
+  #   - cron: 0 20 * * *
+  # 定时编译修改为提交代码时编译
+  push:
+    branches: 
+      - master
   release:
     types: [published]
 
@@ -50,8 +54,44 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      #  - name: 下载 luci-app-clash
+      #   run: |
+      #     mkdir package/openwrt-packages
+      #     git clone https://github.com/frainzy1477/luci-app-clash.git package/openwrt-packages/luci-app-clash
+
       - name: Generate configuration file
-        run: make defconfig
+        # run: make defconfig
+        # 修改在脚本中添加配置命令
+        run: |
+          rm -f ./.config*
+          touch ./.config
+
+          # 编译x64固件:
+          cat >> .config <<EOF
+          CONFIG_TARGET_x86=y
+          CONFIG_TARGET_x86_64=y
+          CONFIG_TARGET_x86_64_Generic=y
+          CONFIG_TARGET_IMAGES_GZIP=y
+          EOF
+
+          # 翻墙
+          cat >> .config <<EOF
+          CONFIG_PACKAGE_luci-app-ssr-plus=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Kcptun=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Server=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Socks=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_V2ray=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_V2ray_plugin=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Trojan=y
+          EOF
+
+          #
+          # ===============================================================
+          # 
+
+          sed -i 's/^[ \t]*//g' ./.config
+          make defconfig
 
       - name: Make download
         run: |
