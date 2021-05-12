@@ -59,6 +59,12 @@ jobs:
           mkdir package/openwrt-packages
           cd package/openwrt-packages
           git clone https://github.com/frainzy1477/luci-app-clash.git
+          # Compile and install po2lmo bin for build i18n language files
+          pushd ./luci-app-clash/tools/po2lmo
+          make && sudo make install
+          popd
+          # I18n language files
+          po2lmo ./luci-app-clash/po/zh-cn/clash.po ./luci-app-clash/po/zh-cn/clash.zh-cn.lmo
           cd ../..
 
       - name: Generate configuration file
@@ -90,12 +96,15 @@ jobs:
           CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_V2ray=y
           CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_V2ray_plugin=y
           CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Trojan=y
+          CONFIG_PACKAGE_luci-app-clash=y
           EOF
 
           # 取消编译:
           cat >> .config <<EOF
           # CONFIG_TARGET_IMAGES_PAD is not set
           # CONFIG_VMDK_IMAGES is not set
+          # CONFIG_GRUB_EFI_IMAGES is not set
+          # CONFIG_GRUB_CONSOLE is not set
           EOF
 
           #
