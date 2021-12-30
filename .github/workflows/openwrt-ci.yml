@@ -113,7 +113,6 @@ jobs:
 
           # 取消编译:
           cat >> .config <<EOF
-          # CONFIG_VMDK_IMAGES is not set
           # CONFIG_GRUB_EFI_IMAGES is not set
           # CONFIG_GRUB_CONSOLE is not set
           EOF
